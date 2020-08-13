@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const {User} = require('../../models')
+const bcrypt = require('bcrypt')
 
 // GET /api/users
 router.get('/', async (req, res) => {
@@ -93,5 +94,23 @@ router.delete('/:id', (req, res) => {
         res.status(500).json(err);
       });
   });
+
+  router.post("/login", async (req,res) => {
+    const dbUserData = await User.findOne({
+      where:{
+        email: req.body.email
+      }
+    })
+    if (!dbUserData) {
+      res.status(400).json({ message: 'No user with that email address!' });
+      return;
+    }
+    if (await dbUserData.checkPassword(req.body.password)) {
+      res.json({user: dbUserData})
+    }
+    else {
+      res.status(400).json({ message: 'Incorrect password!' });
+    }
+  })
 
 module.exports = router;
