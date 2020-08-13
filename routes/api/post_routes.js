@@ -1,10 +1,18 @@
 const router = require('express').Router();
-const { Post, User } = require('../../models');
+const { Post, User, Vote } = require('../../models');
+const sequelize = require('../../config/connection');
+
 
 router.get('/', async (req,res) => {
     try {    
         const dbPostData = await Post.findAll({
-            attributes: ['id','post_url','title','created_at'],
+          attributes: [
+            'id',
+            'post_url',
+            'title',
+            'created_at',
+            [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
+          ],
             order: [['created_at','DESC']],
             include: [
                 {
@@ -26,7 +34,13 @@ router.get('/:id', async (req,res) => {
             where: {
                 id: req.params.id
             },
-            attributes: ['id','post_url','title','created_at'],
+            attributes: [
+              'id',
+              'post_url',
+              'title',
+              'created_at',
+              [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
+            ],
             include: [
                 {
                     model: User,
@@ -60,6 +74,15 @@ router.post('/', async (req, res) => {
         res.status(500).json(err)
     }
 });
+router.put('/upvote', async (req,res) => {
+    try {   
+          const postData = await Post.upvote(req.body, {Vote})
+          res.json(postData)
+    }
+    catch(err) {
+        res.json(err)
+    }
+})
 router.put('/:id', (req, res) => {
     Post.update(
       {
