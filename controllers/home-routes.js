@@ -30,7 +30,10 @@ router.get('/',  async (req, res) => {
         })
         const posts = rawPosts.map(post => post.get({plain:true}))
         // pass a single post object into the homepage template
-        res.render('homepage', { posts })
+        res.render('homepage', {
+            posts,
+            loggedIn: req.session.loggedIn
+          });
     }
     catch(err) {
         console.log(err);
