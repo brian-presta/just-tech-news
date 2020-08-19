@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Post, User, Vote } = require('../../models');
+const { Post, User, Vote, Comment } = require('../../models');
 const sequelize = require('../../config/connection');
 
 
@@ -74,15 +74,18 @@ router.post('/', async (req, res) => {
         res.status(500).json(err)
     }
 });
-router.put('/upvote', async (req,res) => {
-    try {   
-          const postData = await Post.upvote(req.body, {Vote})
-          res.json(postData)
-    }
-    catch(err) {
-        res.json(err)
-    }
-})
+router.put('/upvote', (req, res) => {
+  // make sure the session exists first
+  if (req.session) {
+    // pass session id along with all destructured properties on req.body
+    Post.upvote({ ...req.body, user_id: req.session.user_id }, { Vote, Comment, User })
+      .then(updatedVoteData => res.json(updatedVoteData))
+      .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+      });
+  }
+});
 router.put('/:id', (req, res) => {
     Post.update(
       {
