@@ -134,6 +134,17 @@ router.delete('/:id', (req, res) => {
     else {
       res.status(400).json({ message: 'Incorrect password!' });
     }
-  })
+})
+
+router.post('/logout', (req,res) => {
+  if (req.session.loggedIn) {
+    req.session.destroy( () => {
+        res.status(204).end()
+    })
+  }
+  else {
+    res.status(404).end()
+  }
+})
 
 module.exports = router;
