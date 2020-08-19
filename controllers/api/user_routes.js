@@ -55,7 +55,13 @@ router.post('/', async (req, res) => {
         email: req.body.email,
         password: req.body.password
     })
-    res.json(dbUserData)
+    req.session.save(() => {
+      req.session.user_id = dbUserData.id
+      req.session.username = dbUserData.username
+      req.session.loggedIn = true
+      res.json(dbUserData)
+    })
+    
     }
     catch(err) {
         console.log(err)
@@ -118,7 +124,12 @@ router.delete('/:id', (req, res) => {
       return;
     }
     if (await dbUserData.checkPassword(req.body.password)) {
-      res.json({user: dbUserData})
+      req.session.save(() => {
+        req.session.user_id = dbUserData.id
+        req.session.username = dbUserData.username
+        req.session.loggedIn = true
+        res.json({user: dbUserData, message: 'You are now loged in!'})
+      })
     }
     else {
       res.status(400).json({ message: 'Incorrect password!' });

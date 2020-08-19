@@ -4,6 +4,7 @@ const { Post, User, Comment } = require('../models');
 
 router.get('/',  async (req, res) => {
     try{    
+        console.log(req.session)
         const rawPosts = await Post.findAll({
         attributes: [
             'id',
@@ -38,7 +39,12 @@ router.get('/',  async (req, res) => {
 });
 
 router.get('/login', (req,res) => {
-    res.render('login')
+    if (req.session.loggedIn) {
+        res.redirect('/');
+        return;
+      }
+    
+      res.render('login');
 })
 
 module.exports = router;
